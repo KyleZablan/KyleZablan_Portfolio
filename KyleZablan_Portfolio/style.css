@@ -1,0 +1,317 @@
+/*
+  Warmfolio — static portfolio stylesheet
+  A one-page portfolio built around the idea of a physical portfolio
+  folder: tabbed navigation, index-card projects, a stitched resume
+  timeline. Plain CSS, no build step, no framework.
+*/
+
+/* ---------------------------------------------
+   0. Design tokens
+--------------------------------------------- */
+:root{
+  --color-paper: #F6EFE4;      /* warm cream page background */
+  --color-card:  #FFFBF3;      /* card surface, slightly lighter */
+  --color-ink:   #2A231D;      /* warm near-black for text */
+  --color-ink-soft: #5B5148;   /* muted body text */
+  --color-rust:  #A8461F;      /* primary accent: burnt terracotta */
+  --color-rust-dark: #833011;
+  --color-gold:  #C89A48;      /* secondary accent: brass */
+  --color-moss:  #5F6F52;      /* tertiary accent: deep sage */
+  --color-line:  #DDD0BC;      /* hairline / stitch color */
+  --color-line-strong: #C9B896;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-card: 3px;
+  --shadow-card: 0 1px 0 rgba(42,35,29,0.05), 0 8px 20px -12px rgba(42,35,29,0.25);
+  --shadow-tab: 0 2px 6px rgba(42,35,29,0.12);
+
+  --max-width: 1080px;
+  --gutter: clamp(20px, 5vw, 64px);
+}
+
+/* ---------------------------------------------
+   1. Reset & base
+--------------------------------------------- */
+*, *::before, *::after{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+  *, *::before, *::after{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+body{
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img{ max-width: 100%; display: block; }
+a{ color: var(--color-rust); text-decoration: none; }
+a:hover{ color: var(--color-rust-dark); }
+h1,h2,h3,h4{ font-family: var(--font-display); font-weight: 600; line-height: 1.1; margin: 0 0 0.4em; color: var(--color-ink); }
+p{ margin: 0 0 1em; }
+ul{ margin:0; padding:0; list-style:none; }
+button{ font-family: inherit; }
+:focus-visible{ outline: 2px solid var(--color-rust); outline-offset: 3px; }
+
+.wf-container{ max-width: var(--max-width); margin: 0 auto; padding: 0 var(--gutter); }
+.wf-eyebrow{
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-rust);
+  display: inline-block;
+  margin-bottom: 0.75em;
+}
+.wf-section{ padding: 96px 0; position: relative; }
+.wf-section + .wf-section{ border-top: 1px dashed var(--color-line-strong); }
+.wf-section-head{ max-width: 620px; margin-bottom: 48px; }
+.wf-section-head h2{ font-size: clamp(1.8rem, 3vw, 2.4rem); }
+.wf-fade-in{ opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+.wf-fade-in.is-visible{ opacity: 1; transform: none; }
+
+/* ---------------------------------------------
+   2. Header / folder-tab navigation
+--------------------------------------------- */
+.wf-header{
+  position: sticky; top: 0; z-index: 40;
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-line);
+}
+.wf-header-inner{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px var(--gutter);
+  max-width: var(--max-width); margin: 0 auto;
+}
+.wf-brand{ font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; color: var(--color-ink); }
+.wf-brand:hover{ color: var(--color-ink); }
+
+.wf-tabs{ display: flex; gap: 6px; }
+.wf-tabs li{ position: relative; }
+.wf-tabs a{
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  background: var(--color-card);
+  padding: 9px 16px 8px;
+  border: 1px solid var(--color-line);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  transform: translateY(3px);
+  box-shadow: var(--shadow-tab);
+}
+.wf-tabs a:hover, .wf-tabs a.is-active{
+  color: var(--color-rust-dark);
+  transform: translateY(0);
+  border-color: var(--color-line-strong);
+}
+
+.wf-nav-toggle{
+  display: none;
+  background: none; border: 1px solid var(--color-line-strong); border-radius: 6px;
+  padding: 8px 10px; cursor: pointer;
+}
+.wf-nav-toggle span, .wf-nav-toggle span::before, .wf-nav-toggle span::after{
+  content: ""; display: block; width: 20px; height: 2px; background: var(--color-ink); position: relative;
+}
+.wf-nav-toggle span::before{ position: absolute; top: -6px; }
+.wf-nav-toggle span::after{ position: absolute; top: 6px; }
+
+@media (max-width: 780px){
+  .wf-nav-toggle{ display: block; }
+  .wf-tabs{
+    position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; gap: 0;
+    background: var(--color-paper);
+    border-bottom: 1px solid var(--color-line);
+    padding: 8px var(--gutter) 16px;
+    display: none;
+  }
+  .wf-tabs.is-open{ display: flex; }
+  .wf-tabs a{ border-radius: 6px; border-bottom: 1px solid var(--color-line); transform: none; box-shadow: none; width: 100%; }
+}
+
+/* ---------------------------------------------
+   3. Hero
+--------------------------------------------- */
+.wf-hero{
+  padding: 84px 0 96px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 48px;
+  align-items: center;
+}
+.wf-hero h1{
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-style: italic;
+  font-variation-settings: "opsz" 144;
+}
+.wf-hero .wf-sub{ font-size: 1.15rem; color: var(--color-ink-soft); max-width: 46ch; margin-bottom: 1.6em; }
+.wf-btn{
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--color-rust); color: #fff;
+  font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.03em;
+  padding: 13px 22px; border-radius: 4px;
+  border: none; cursor: pointer;
+  box-shadow: 0 6px 16px -6px rgba(168,70,31,0.55);
+}
+.wf-btn:hover{ background: var(--color-rust-dark); color: #fff; }
+.wf-btn.wf-btn-ghost{
+  background: transparent; color: var(--color-ink); border: 1px solid var(--color-line-strong);
+  box-shadow: none;
+}
+.wf-btn.wf-btn-ghost:hover{ border-color: var(--color-rust); color: var(--color-rust-dark); }
+
+.wf-hero-photo{
+  position: relative;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  padding: 10px;
+  box-shadow: var(--shadow-card);
+  transform: rotate(-1.4deg);
+}
+.wf-hero-photo img{ border-radius: 2px; aspect-ratio: 4/5; object-fit: cover; width: 100%; }
+.wf-hero-photo::after{
+  content: "";
+  position: absolute; inset: -6px -6px auto auto; top: -10px; right: 18px;
+  width: 46px; height: 46px;
+  background: var(--color-gold);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  opacity: 0.9;
+}
+
+@media (max-width: 780px){
+  .wf-hero{ grid-template-columns: 1fr; }
+  .wf-hero-photo{ order: -1; max-width: 260px; margin: 0 auto; }
+}
+
+/* ---------------------------------------------
+   4. About
+--------------------------------------------- */
+.wf-about{ display: grid; grid-template-columns: 0.7fr 1.3fr; gap: 56px; align-items: start; }
+.wf-about-photo{ border-radius: var(--radius-card); overflow: hidden; border: 1px solid var(--color-line-strong); }
+.wf-about-bio{ font-size: 1.05rem; color: var(--color-ink-soft); }
+.wf-about-bio p:first-child{ font-size: 1.2rem; color: var(--color-ink); font-family: var(--font-display); }
+@media (max-width: 780px){ .wf-about{ grid-template-columns: 1fr; } .wf-about-photo{ max-width: 220px; } }
+
+/* ---------------------------------------------
+   5. Work — index-card project grid
+--------------------------------------------- */
+.wf-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+.wf-card{
+  position: relative;
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  padding: 26px 24px 24px;
+  box-shadow: var(--shadow-card);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+}
+.wf-card::before{
+  content: "";
+  position: absolute; top: 0; right: 0;
+  width: 26px; height: 26px;
+  background: linear-gradient(135deg, transparent 50%, var(--color-paper) 50%);
+  border-left: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+.wf-card-tag{
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-moss);
+  background: rgba(95,111,82,0.1);
+  border: 1px dashed var(--color-moss);
+  padding: 3px 9px;
+  border-radius: 20px;
+  transform: rotate(-2deg);
+  margin-bottom: 14px;
+}
+.wf-card h3{ font-size: 1.25rem; margin-bottom: 4px; }
+.wf-card h3 a{ color: var(--color-ink); }
+.wf-card h3 a:hover{ color: var(--color-rust-dark); }
+.wf-card-meta{ font-family: var(--font-mono); font-size: 0.76rem; color: var(--color-ink-soft); margin-bottom: 12px; }
+.wf-card-excerpt{ color: var(--color-ink-soft); font-size: 0.95rem; margin-bottom: 14px; }
+.wf-card-link{ font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600; }
+.wf-card-link::after{ content: " →"; }
+
+/* ---------------------------------------------
+   6. Resume — stitched timeline
+--------------------------------------------- */
+.wf-resume-cols{ display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+.wf-resume-col h3{
+  font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--color-rust); margin-bottom: 22px; padding-bottom: 10px;
+  border-bottom: 1px dashed var(--color-line-strong);
+}
+.wf-resume-item{ display: grid; grid-template-columns: 96px 1fr; gap: 18px; padding: 16px 0; border-bottom: 1px dotted var(--color-line); }
+.wf-resume-item:last-child{ border-bottom: none; }
+.wf-resume-date{ font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-ink-soft); padding-top: 4px; }
+.wf-resume-role{ font-size: 1.05rem; margin-bottom: 2px; }
+.wf-resume-org{ font-size: 0.9rem; color: var(--color-rust-dark); margin-bottom: 6px; font-weight: 600; }
+.wf-resume-desc{ font-size: 0.92rem; color: var(--color-ink-soft); }
+.wf-resume-empty{ color: var(--color-ink-soft); font-size: 0.9rem; font-style: italic; }
+@media (max-width: 780px){ .wf-resume-cols{ grid-template-columns: 1fr; } }
+
+/* ---------------------------------------------
+   7. Contact
+--------------------------------------------- */
+.wf-contact{ display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+.wf-form{ display: grid; gap: 16px; }
+.wf-field label{ display: block; font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-ink-soft); margin-bottom: 6px; }
+.wf-field input, .wf-field textarea{
+  width: 100%; font-family: var(--font-body); font-size: 1rem;
+  padding: 12px 14px; border: 1px solid var(--color-line-strong); border-radius: 4px;
+  background: var(--color-card); color: var(--color-ink);
+}
+.wf-field textarea{ min-height: 130px; resize: vertical; }
+.wf-honeypot{ position: absolute; left: -9999px; opacity: 0; }
+.wf-form-msg{ padding: 12px 16px; border-radius: 4px; font-size: 0.92rem; margin-bottom: 8px; }
+.wf-form-msg.success{ background: rgba(95,111,82,0.14); color: var(--color-moss); border: 1px solid var(--color-moss); }
+.wf-form-msg.error{ background: rgba(168,70,31,0.1); color: var(--color-rust-dark); border: 1px solid var(--color-rust); }
+
+.wf-contact-side{ font-size: 0.98rem; color: var(--color-ink-soft); }
+.wf-contact-side a{ color: var(--color-ink); font-weight: 600; }
+.wf-social{ display: flex; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+.wf-social a{
+  font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;
+  border: 1px solid var(--color-line-strong); border-radius: 20px; padding: 7px 14px;
+}
+.wf-social a:hover{ border-color: var(--color-rust); color: var(--color-rust-dark); }
+@media (max-width: 780px){ .wf-contact{ grid-template-columns: 1fr; } }
+
+/* ---------------------------------------------
+   8. Single project template
+--------------------------------------------- */
+.wf-single-project{ padding: 64px 0 96px; }
+.wf-single-project header{ max-width: 720px; margin-bottom: 32px; }
+.wf-single-project .wf-card-meta{ margin-bottom: 22px; }
+.wf-single-project .wf-single-body{ max-width: 720px; font-size: 1.05rem; color: var(--color-ink-soft); }
+.wf-single-project .wf-single-body img{ border-radius: var(--radius-card); margin: 24px 0; }
+.wf-back-link{ font-family: var(--font-mono); font-size: 0.82rem; display: inline-block; margin-bottom: 28px; }
+.wf-back-link::before{ content: "← "; }
+
+/* ---------------------------------------------
+   9. Blog fallback (index.php / single.php / page.php)
+--------------------------------------------- */
+.wf-blog{ padding: 64px 0 96px; max-width: 720px; margin: 0 auto; }
+.wf-post-preview{ margin-bottom: 40px; padding-bottom: 40px; border-bottom: 1px dashed var(--color-line-strong); }
+.wf-post-preview h2{ font-size: 1.5rem; }
+.wf-post-preview .wf-card-meta{ margin-bottom: 10px; }
+
+/* ---------------------------------------------
+   10. Footer
+--------------------------------------------- */
+.wf-footer{ padding: 40px 0; border-top: 1px dashed var(--color-line-strong); }
+.wf-footer-inner{ display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.wf-footer-text{ font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-ink-soft); }
+.wf-to-top{ font-family: var(--font-mono); font-size: 0.78rem; }
